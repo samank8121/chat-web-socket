@@ -54,8 +54,8 @@ function App() {
         }}
       />
       <button onClick={sendMessage}> Send Message</button>
-      <h1> Messages:</h1>
       <div>{joinedRoom}</div>
+      <h1> Messages:</h1>      
       <div className='message-container firefox-scroll'>
         {messages.map((m, index) => {
           return (
