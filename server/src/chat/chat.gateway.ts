@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ConnectedSocket,
   MessageBody,
@@ -18,14 +17,14 @@ import { instrument } from '@socket.io/admin-ui';
   },
 })
 export class ChatGateway implements OnGatewayInit {
-  //@WebSocketServer() server: Server;
+  @WebSocketServer() server: Server;
 
   afterInit() {
-    // instrument(this.server, {
-    //   auth: false,
-    //   mode: 'development',
-    //   namespaceName: '/admin',
-    // });
+    instrument(this.server, {
+      auth: false,
+      mode: 'development',
+      namespaceName: '/admin',
+    });
   }
   handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`Client connected: ${client.id}, ${client.nsp.name}`);
