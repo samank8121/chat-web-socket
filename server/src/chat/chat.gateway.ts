@@ -1,6 +1,7 @@
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
@@ -8,6 +9,8 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { instrument } from '@socket.io/admin-ui';
+import { UseGuards } from '@nestjs/common';
+import { WsJwtGuard } from 'src/auth/guard/jwt.guard';
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -16,17 +19,25 @@ import { instrument } from '@socket.io/admin-ui';
     credentials: true,
   },
 })
-export class ChatGateway implements OnGatewayInit {
+@UseGuards(WsJwtGuard)
+export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
   @WebSocketServer() server: Server;
-
+  constructor() {}
   afterInit() {
-    instrument(this.server, {
-      auth: false,
-      mode: 'development',
-      namespaceName: '/admin',
-    });
+    // instrument(this.server, {
+    //   auth: false,
+    //   mode: 'development',
+    //   namespaceName: '/admin',
+    // });
   }
   handleConnection(@ConnectedSocket() client: Socket) {
+    // const token = client.handshake?.headers?.authorization?.split(' ')[1];
+    // try {
+    //   const payload = this.jwtService.verify(token);
+    //   client.data = { user: payload }; // Attach user to client
+    // } catch {
+    //   client.disconnect(); // Invalid token: disconnect
+    // }
     console.log(`Client connected: ${client.id}, ${client.nsp.name}`);
   }
 
@@ -35,8 +46,12 @@ export class ChatGateway implements OnGatewayInit {
   }
 
   @SubscribeMessage('message')
-  handleMessage(@MessageBody() message: string): string {
+  handleMessage(
+    @MessageBody() message: string,
+    @ConnectedSocket() client: Socket,
+  ): string {
     console.log('server recieve message', message);
+    console.log('server recieve user', client['user'] ?? 'No user attached');
     return message;
   }
   @SubscribeMessage('join_room')

@@ -1,28 +1,38 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
-import io from 'socket.io-client';
-
-const socket = io('http://localhost:3001/chat');
+import createSocket from './utils/socket';
 
 type MessageType = {
   message: string;
   status: 'sent' | 'recieved';
 };
+
 function App() {
   const [room, setRoom] = useState('');
   const [messageSent, setMessageSent] = useState('');
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [joinedRoom, setJoinedRoom] = useState('');
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
+  const [socket, setSocket] = useState<any>(null);
+  useEffect(() => {
+    const initializeSocket = async () => {
+      const socket = await createSocket();
+      setSocket(socket);
+    };
+    initializeSocket().catch((error) => {
+      console.error('Error initializing socket:', error);
+    });
+  }, []);
 
   useEffect(() => {
-    socket.on('receive_message', (data) => {
+    if (!socket) return;
+    socket.on('receive_message', (data: MessageType) => {
       setMessages([...messages, { message: data.message, status: 'recieved' }]);
     });
     if (lastMessageRef && lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, socket, lastMessageRef]);
 
   const joinRoom = () => {
     if (room !== '') {
@@ -55,13 +65,13 @@ function App() {
       />
       <button onClick={sendMessage}> Send Message</button>
       <h2>{joinedRoom}</h2>
-      <h2> Messages:</h2>      
+      <h2> Messages:</h2>
       <div className='message-container firefox-scroll'>
         {messages.map((m, index) => {
           return (
-            <div ref={index === messages.length - 1 ? lastMessageRef : null}>
-              <span key={index}>{`${m.status}: `}</span>
-              <span key={index}>{m.message}</span>
+            <div key={index} ref={index === messages.length - 1 ? lastMessageRef : null}>
+              <span>{`${m.status}: `}</span>
+              <span>{m.message}</span>
               <br />
             </div>
           );
