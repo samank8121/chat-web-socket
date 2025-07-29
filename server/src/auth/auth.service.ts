@@ -21,7 +21,6 @@ export class AuthService {
           hash,
         },
       });
-
       return this.signToken(user.id, user.email);
     } catch {
       throw new ForbiddenException('User already exists');
@@ -49,12 +48,10 @@ export class AuthService {
       email,
     };
     const secret = this.config.get('TOKEN_SECRET_KEY');
-
     const token = await this.jwt.signAsync(payload, {
       expiresIn: '1h',
       secret: secret,
     });
-
     return {
       access_token: token,
     };

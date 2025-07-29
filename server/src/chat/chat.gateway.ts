@@ -72,6 +72,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
     console.log(
       `Message received from ${client.id} in room ${room}: ${messageSent}`,
     );
-    client.broadcast.to(room).emit('receive_message', { message: messageSent });
+    client.broadcast
+      .to(room)
+      .emit('receive_message', {
+        user: client['user'].email,
+        message: messageSent,
+      });
   }
 }

@@ -1,25 +1,15 @@
 import { io } from 'socket.io-client';
+import { getUser } from '../lib/store/user';
 
 const createSocket = async () => {
-  const token = await fetch('http://localhost:3001/auth/signin', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email: 'saman.k2@gmail.com', password: '123456' }), // Replace with actual logic to get token
-  }).then((response) => {
-    return response.json();
-  });
-  console.log('Token:', token);
-  if (!token) {
-    throw new Error('No token found');
+  if (!process.env.REACT_APP_API_URL || !process.env.REACT_APP_SOCKET_URL) {
+    throw new Error('API_URL and SOCKET_URL must be defined');
   }
+  const user = getUser();
 
-  const socket = io('http://localhost:3001/chat', {
+  const socket = io(process.env.REACT_APP_SOCKET_URL, {
     //query: { token: token.access_token }, // Pass token in query
-    // OR
-    auth: { token: token.access_token }, // Pass token in auth object
-    // OR
+    auth: { token: user?.token }, // Pass token in auth object
     // extraHeaders: { Authorization: `Bearer your_jwt_token` }, // Pass token in headers
   });
   return socket;
