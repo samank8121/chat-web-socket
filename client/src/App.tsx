@@ -1,73 +1,49 @@
-import React, { useEffect, useRef, useState } from 'react';
-import './App.css';
-import io from 'socket.io-client';
+import Home from '@/pages/home';
+import SignIn from '@/pages/auth/sign-in';
+import SignUp from '@/pages/auth/sign-up';
+import { Routes, Route, Outlet, useNavigate } from 'react-router-dom';
+import { ThemeProvider } from '@/components/theme-provider';
+import Header from '@/components/header';
+import { getUser, resetUser, useUserStore } from '@/lib/store/user';
+import { useEffect } from 'react';
 
-const socket = io('http://localhost:3001/chat');
-
-type MessageType = {
-  message: string;
-  status: 'sent' | 'recieved';
-};
-function App() {
-  const [room, setRoom] = useState('');
-  const [messageSent, setMessageSent] = useState('');
-  const [messages, setMessages] = useState<MessageType[]>([]);
-  const [joinedRoom, setJoinedRoom] = useState('');
-  const lastMessageRef = useRef<HTMLDivElement | null>(null);
-
+const Layout = () => {
+  const hasHydrated = useUserStore((s) => s.hasHydrated);
+  
+  const navigate = useNavigate();
   useEffect(() => {
-    socket.on('receive_message', (data) => {
-      setMessages([...messages, { message: data.message, status: 'recieved' }]);
-    });
-    if (lastMessageRef && lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
+    if (!hasHydrated) return;
 
-  const joinRoom = () => {
-    if (room !== '') {
-      socket.emit('join_room', room, (data: string) => {
-        setJoinedRoom(data);
-      });
+    const user = getUser();
+    console.log('User:', user);
+    if (user === null || user.token === '' || !user.storeTime || user.storeTime - Date.now() < 0) {
+      console.log('User is not authenticated or token is expired');
+      resetUser();
+      navigate('/signin');
+      return;
     }
-  };
-
-  const sendMessage = () => {
-    setMessages([...messages, { message: messageSent, status: 'sent' }]);
-    socket.emit('send_message', { messageSent, room });
-    setMessageSent('');
-  };
+  }, [hasHydrated, navigate]);
   return (
-    <div className='app '>
-      <input
-        placeholder='Room'
-        onChange={(event) => {
-          setRoom(event.target.value);
-        }}
-      />
-      <button onClick={joinRoom}> Join Room</button>
-      <input
-        placeholder='Message'
-        value={messageSent}
-        onChange={(event) => {
-          setMessageSent(event.target.value);
-        }}
-      />
-      <button onClick={sendMessage}> Send Message</button>
-      <h2>{joinedRoom}</h2>
-      <h2> Messages:</h2>      
-      <div className='message-container firefox-scroll'>
-        {messages.map((m, index) => {
-          return (
-            <div ref={index === messages.length - 1 ? lastMessageRef : null}>
-              <span key={index}>{`${m.status}: `}</span>
-              <span key={index}>{m.message}</span>
-              <br />
-            </div>
-          );
-        })}
+    <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
+      <div className='flex flex-col min-h-screen p-2 container mx-auto'>
+        <main>
+          <Header />
+          <Outlet />
+        </main>
       </div>
-    </div>
+    </ThemeProvider>
+  );
+};
+
+function App() {
+  return (
+    <Routes>
+      <Route path='/' element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path='/signin' element={<SignIn />} />
+        <Route path='/signup' element={<SignUp />} />
+      </Route>
+    </Routes>
   );
 }
 
