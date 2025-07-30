@@ -1,9 +1,10 @@
 ## Description
 This is a chat project consists of two subprojects:
-- **Client**: Built with React and Socket.io
-- **Server**: Built with Nest.js
+- **Client**: Built with React, vite, tailwind, shadcn, zustand and socket.io
+- **Server**: Built with Nest.js, prisma, postgresql
 
 ## Key Features
+- Authentication
 - Join a room
 - Broadcast messages
 - Direct chat with another user
@@ -14,7 +15,7 @@ This is a chat project consists of two subprojects:
 Run the following command in both the client and server directories:
 
 ```bash
-$ npm install
+$ pnpm install
 ```
 
 ## Running the Project
@@ -23,15 +24,15 @@ Each subproject should be started separately.
 # Server Commands
 ```bash
 # development
-$ npm run start
+$ pnpm run dev
 
 # watch mode
-$ npm run start:dev
+$ pnpm run start:dev
 ```
 # Client Commands
 ```bash
 # development
-$ npm run start
+$ pnpm run dev
 ```
 ## Author
 [Saman Kefayatpour](https://www.linkedin.com/in/samankefayatpour/)
