@@ -2,7 +2,9 @@ import React from 'react';
 import { useState } from 'react';
 import { setUser } from '@/lib/store/user';
 import { useNavigate } from 'react-router-dom';
-import { SignInSchema, SignInSchemaType } from '@/lib/zod-schema/auth';
+import { SignInSchema, type SignInSchemaType } from '@/lib/zod-schema/auth';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -19,7 +21,7 @@ const SignIn = () => {
       return;
     }
 
-    const token = await fetch(`${process.env.REACT_APP_API_URL}/auth/signin`, {
+    const token = await fetch(`${import.meta.env.VITE_APP_API_URL}/auth/signin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,7 +34,7 @@ const SignIn = () => {
       return response.json();
     });
     if (token.access_token) {
-      setUser({ token: token.access_token, email: formData.email });
+      setUser({ token: token.access_token, email: formData.email, storeTime: Date.now() });
       navigate('/');
     } else {
       alert('Sign in failed. Please check your credentials.');
@@ -45,15 +47,15 @@ const SignIn = () => {
     ) : null;
   };
   return (
-    <form onSubmit={handleSubmit}>
-      <input
+    <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
+      <Input
         type='email'
         placeholder='Email'
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
       />
       {renderFieldError('email')}
-      <input
+      <Input
         type='password'
         placeholder='Password'
         value={formData.password}
@@ -62,7 +64,7 @@ const SignIn = () => {
       {renderFieldError('password')}
       <br/>
       <a href='/signup'>Don't have an account? Sign up</a>
-      <button type='submit'>Sign In</button>
+      <Button type='submit'>Sign In</Button>
     </form>
   );
 };

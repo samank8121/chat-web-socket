@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware'
 
-type User = { token: string; email: string } | null;
+export type User = { token: string; email: string, storeTime: number } | null;
 type UserStore = {
   user: User;
   setUser: (user: User) => void;

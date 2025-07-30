@@ -1,35 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import createSocket, { socketErrorHandler } from '@/utils/socket';
-import SocketEvents, { ME } from '@/utils/constant';
-import { getUser, useUserStore } from '@/lib/store/user';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Button } from "@/components/ui/button"
+import SocketEvents, { ME } from '@/lib/constant';
+import createSocket, { socketErrorHandler } from '@/lib/socket';
+import type { MessageType } from '@/types/message';
+import type { SocketError } from '@/types/socket-error';
+import { useEffect, useRef, useState } from 'react';
+import type { Socket } from 'socket.io-client';
 
-type MessageType = {
-  message: string;
-  user: string;
-  status: 'sent' | 'recieved';
-};
-
-function Home() {
+const Home = () => {
   const [room, setRoom] = useState('');
   const [messageSent, setMessageSent] = useState('');
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [joinedRoom, setJoinedRoom] = useState('');
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
-  const [socket, setSocket] = useState<any>(null);
-  const hasHydrated = useUserStore((s) => s.hasHydrated);
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (!hasHydrated) return;
-
-    const user = getUser();
-    if (user === null || user.token === '') {
-      navigate('/signin');
-      return;
-    }
-
+  const [socket, setSocket] = useState<Socket | null>(null);
+  
+   useEffect(() => { 
     const initializeSocket = async () => {
       try {
         const socket = await createSocket();
@@ -46,18 +32,18 @@ function Home() {
         setSocket(null);
       }
     };
-  }, [hasHydrated, navigate]);
+  }, []);
 
   useEffect(() => {
     if (!socket) return;
-    socket.on(SocketEvents.ERROR, (error: any) => {
+    socket.on(SocketEvents.ERROR, (error: SocketError) => {
       socketErrorHandler(error);
     });
     socket.on(SocketEvents.RECEIVE_MESSAGE, (data: MessageType) => {
       console.log('Message received:', data);
       setMessages([
         ...messages,
-        { message: data.message, user: data.user, status: 'recieved' },
+        { message: data.message, user: data.user, status: 'received' },
       ]);
     });
     if (lastMessageRef && lastMessageRef.current) {
@@ -73,7 +59,7 @@ function Home() {
     console.log('Joining room:', room);
     if (room !== '') {
       console.log('Joining room(if):', room);
-      socket.emit(SocketEvents.JOIN_ROOM, room, (data: string) => {
+      socket?.emit(SocketEvents.JOIN_ROOM, room, (data: string) => {
         console.log('Joining room(callback):', room);
         setJoinedRoom(data);
       });
@@ -85,29 +71,23 @@ function Home() {
       ...messages,
       { message: messageSent, user: ME, status: 'sent' },
     ]);
-    socket.emit(SocketEvents.SEND_MESSAGE, { messageSent, room });
+    socket?.emit(SocketEvents.SEND_MESSAGE, { messageSent, room });
     setMessageSent('');
   };
   return (
-    <div className='flex flex-col items-center justify-center h-screen'>
-      <Input
-        placeholder='Room'
-        onChange={(event) => {
-          setRoom(event.target.value);
-        }}
-      />
-      <Button onClick={joinRoom}> Join Room</Button>
-      <Input
-        placeholder='Message'
-        value={messageSent}
-        onChange={(event) => {
-          setMessageSent(event.target.value);
-        }}
-      />
-      <Button onClick={sendMessage}> Send Message</Button>
-      <h2>{joinedRoom}</h2>
-      <h2> Messages:</h2>
-      <div className='p-4 overflow-y-auto border-2 border-gray-300 h-96 w-96'>
+    <div className='flex flex-col h-screen gap-4 w-full py-4'>
+      <div className='flex gap-2 w-full'>
+        <Input
+          placeholder='Room'
+          onChange={(event) => {
+            setRoom(event.target.value);
+          }}
+        />
+        <Button onClick={joinRoom}> Join Room</Button>
+      </div>
+      {joinedRoom && <h2>{joinedRoom}</h2>}
+      <div className='p-4 overflow-y-auto border-2 border-gray-300 rounded-2xl w-full h-96'>        
+        {messages.length === 0 && <h2 className='text-gray-500'>Messages</h2>}
         {messages.map((m, index) => {
           return (
             <div
@@ -121,8 +101,20 @@ function Home() {
           );
         })}
       </div>
+      
+      <div className='flex gap-2 w-full'>
+        <Input
+          placeholder='Message'
+          value={messageSent}
+          onChange={(event) => {
+            setMessageSent(event.target.value);
+          }}
+        />
+        <Button onClick={sendMessage}> Send Message</Button>
+      </div>
+      
     </div>
   );
-}
+};
 
 export default Home;

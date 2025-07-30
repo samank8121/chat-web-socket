@@ -1,17 +1,17 @@
 {
-    "compilerOptions": {
-      "target": "esnext",
-      "module": "commonjs",
-      "jsx": "react",
-      "strict": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,
-      "baseUrl": ".",
-      "paths": {
-        "@/*": ["./src/*"]
-      }
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
     },
-    "include": ["src"]
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   }
-  
+}

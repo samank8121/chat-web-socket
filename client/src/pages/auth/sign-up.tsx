@@ -2,9 +2,10 @@ import React from 'react';
 import { useState } from 'react';
 import { setUser } from '@/lib/store/user';
 import { useNavigate } from 'react-router-dom';
-import { SignUpSchema, SignUpSchemaType } from '@/lib/zod-schema/auth';
+import { SignUpSchema, type SignUpSchemaType } from '@/lib/zod-schema/auth';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
-;
 const SignUp = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -23,7 +24,7 @@ const SignUp = () => {
       return;
     }
     setErrors(null);
-    const token = await fetch(`${process.env.REACT_APP_API_URL}/auth/signup`, {
+    const token = await fetch(`${import.meta.env.VITE_APP_API_URL}/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -36,7 +37,7 @@ const SignUp = () => {
       return response.json();
     });
     if (token.access_token) {
-      setUser({ token: token.access_token, email: formData.email });
+      setUser({ token: token.access_token, email: formData.email, storeTime: Date.now() });
       navigate('/');
     } else {
       alert('Sign up failed. Please check your credentials.');
@@ -44,27 +45,27 @@ const SignUp = () => {
   };
   const renderFieldError = (field: keyof SignUpSchemaType) => {
     return errors && errors[field] ? (
-      <span className="error">{errors[field][0]}</span>
+      <span className='error'>{errors[field][0]}</span>
     ) : null;
   };
   return (
-    <form onSubmit={handleSubmit}>
-      <input
+    <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
+      <Input
         type='email'
         placeholder='Email'
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
       />
-    {renderFieldError('email')}
+      {renderFieldError('email')}
 
-      <input
+      <Input
         type='password'
         placeholder='Password'
         value={formData.password}
         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
       />
       {renderFieldError('password')}
-      <input
+      <Input
         type='password'
         placeholder='Re-enter Password'
         value={formData.repassword}
@@ -72,10 +73,10 @@ const SignUp = () => {
           setFormData({ ...formData, repassword: e.target.value })
         }
       />
-     {renderFieldError('repassword')}
-     <br />
+      {renderFieldError('repassword')}
+      <br />
       <a href='/signin'>Already have an account? Sign in</a>
-      <button type='submit'>Sign Up</button>
+      <Button type='submit'>Sign Up</Button>
     </form>
   );
 };

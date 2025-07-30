@@ -1,4 +1,3 @@
-* ezafe kardan tailwind va shadcn
 * save o namayesh data ghabli
 * left the room
 * encrypt the messages
