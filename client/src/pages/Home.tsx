@@ -107,7 +107,7 @@ function Home() {
       <Button onClick={sendMessage}> Send Message</Button>
       <h2>{joinedRoom}</h2>
       <h2> Messages:</h2>
-      <div className='overflow-y-auto h-96 w-96 border-2 border-gray-300 p-4'>
+      <div className='p-4 overflow-y-auto border-2 border-gray-300 h-96 w-96'>
         {messages.map((m, index) => {
           return (
             <div
