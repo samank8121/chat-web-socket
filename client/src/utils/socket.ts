@@ -14,5 +14,20 @@ const createSocket = async () => {
   });
   return socket;
 };
+type SocketError = {
+  message: string;
+  code?: string;
+  status?: string;
+};
+export const socketErrorHandler = (error: SocketError) => {
+  if (error && error.code) {
+    if (error.code === 'INVALID_TOKEN' || error.code === 'NO_TOKEN_PROVIDED') {
+      window.location.href = '/signin';
+    }
+  } else if (error && error.message) {
+    console.error('Socket error:', error.message);
+    alert(`Error: ${error.message}`);
+  }
+};
 
 export default createSocket;

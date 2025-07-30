@@ -1,3 +1,6 @@
-* dosrost kardan peygham bargasht baraye guard
-* namayesh data ghabli
+* ezafe kardan tailwind va shadcn
+* save o namayesh data ghabli
 * left the room
+* encrypt the messages
+* reset password
+* forgot password

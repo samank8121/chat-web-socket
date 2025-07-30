@@ -1,25 +1,29 @@
 import React from 'react';
 import { useState } from 'react';
-import { setUser } from '../lib/store/user';
+import { setUser } from '@/lib/store/user';
 import { useNavigate } from 'react-router-dom';
-import { SignInSchema, SignInSchemaType } from '../lib/zod-schema/auth';
+import { SignUpSchema, SignUpSchemaType } from '@/lib/zod-schema/auth';
 
-const SignIn = () => {
+;
+const SignUp = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    repassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string[]> | null>(null);
+
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = SignInSchema.safeParse(formData);
+    const result = SignUpSchema.safeParse(formData);
     if (!result.success) {
+      console.error('Validation errors:', result.error);
       setErrors(result.error.flatten().fieldErrors);
       return;
     }
-
-    const token = await fetch(`${process.env.REACT_APP_API_URL}/auth/signin`, {
+    setErrors(null);
+    const token = await fetch(`${process.env.REACT_APP_API_URL}/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -35,13 +39,12 @@ const SignIn = () => {
       setUser({ token: token.access_token, email: formData.email });
       navigate('/');
     } else {
-      alert('Sign in failed. Please check your credentials.');
-      console.error('Error signing in:', token.error);
+      alert('Sign up failed. Please check your credentials.');
     }
   };
-  const renderFieldError = (field: keyof SignInSchemaType) => {
+  const renderFieldError = (field: keyof SignUpSchemaType) => {
     return errors && errors[field] ? (
-      <span className='error'>{errors[field][0]}</span>
+      <span className="error">{errors[field][0]}</span>
     ) : null;
   };
   return (
@@ -52,7 +55,8 @@ const SignIn = () => {
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
       />
-      {renderFieldError('email')}
+    {renderFieldError('email')}
+
       <input
         type='password'
         placeholder='Password'
@@ -60,11 +64,20 @@ const SignIn = () => {
         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
       />
       {renderFieldError('password')}
-      <br/>
-      <a href='/signup'>Don't have an account? Sign up</a>
-      <button type='submit'>Sign In</button>
+      <input
+        type='password'
+        placeholder='Re-enter Password'
+        value={formData.repassword}
+        onChange={(e) =>
+          setFormData({ ...formData, repassword: e.target.value })
+        }
+      />
+     {renderFieldError('repassword')}
+     <br />
+      <a href='/signin'>Already have an account? Sign in</a>
+      <button type='submit'>Sign Up</button>
     </form>
   );
 };
 
-export default SignIn;
+export default SignUp;

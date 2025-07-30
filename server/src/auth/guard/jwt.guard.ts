@@ -3,6 +3,7 @@ import { WsException } from '@nestjs/websockets';
 import { JwtService } from '@nestjs/jwt';
 import { Socket } from 'socket.io';
 import { ConfigService } from '@nestjs/config';
+import errorCode from 'src/chat/constants';
 
 @Injectable()
 export class WsJwtGuard implements CanActivate {
@@ -14,19 +15,27 @@ export class WsJwtGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: Socket = context.switchToWs().getClient<Socket>();
     const token = this.extractTokenFromHandshake(client);
+    console.log('Token received:', token);
     if (!token) {
-      throw new WsException('Unauthorized: No token provided');
+      throw new WsException({
+        message: 'Unauthorized: No token provided',
+        code: errorCode.NO_TOKEN_PROVIDED,
+      });
     }
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.config.get('TOKEN_SECRET_KEY'),
       });
-
+      console.log('Token payload:', payload);
       client['user'] = payload;
       return true;
     } catch {
-      throw new WsException('Unauthorized: Invalid token');
+      console.log('Invalid token');
+      throw new WsException({
+        message: 'Unauthorized: Invalid token',
+        code: errorCode.INVALID_TOKEN,
+      });
     }
   }
 

@@ -1,10 +1,8 @@
 import React from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
-import SignIn from './auth/sign-in';
-import { useEffect } from 'react';
-import { getUser, useUserStore } from './lib/store/user';
-import SignUp from './auth/sign-up';
-import Home from './Home';
+import { Routes, Route } from 'react-router-dom';
+import SignIn from '@/pages/auth/sign-in';
+import SignUp from '@/pages/auth/sign-up';
+import Home from '@/pages/Home';
 
 function App() {
 

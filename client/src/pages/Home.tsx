@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Home.css';
-import createSocket from './utils/socket';
-import SocketEvents, { ME } from './utils/constant';
-import { getUser, useUserStore } from './lib/store/user';
+import createSocket, { socketErrorHandler } from '@/utils/socket';
+import SocketEvents, { ME } from '@/utils/constant';
+import { getUser, useUserStore } from '@/lib/store/user';
+import { Input } from '@/components/ui/input';
+import { Button } from "@/components/ui/button"
 
 type MessageType = {
   message: string;
@@ -49,6 +50,9 @@ function Home() {
 
   useEffect(() => {
     if (!socket) return;
+    socket.on(SocketEvents.ERROR, (error: any) => {
+      socketErrorHandler(error);
+    });
     socket.on(SocketEvents.RECEIVE_MESSAGE, (data: MessageType) => {
       console.log('Message received:', data);
       setMessages([
@@ -60,13 +64,17 @@ function Home() {
       lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
     }
     return () => {
+      socket.off(SocketEvents.ERROR);
       socket.off(SocketEvents.RECEIVE_MESSAGE);
     };
   }, [messages, socket, lastMessageRef]);
 
   const joinRoom = () => {
+    console.log('Joining room:', room);
     if (room !== '') {
+      console.log('Joining room(if):', room);
       socket.emit(SocketEvents.JOIN_ROOM, room, (data: string) => {
+        console.log('Joining room(callback):', room);
         setJoinedRoom(data);
       });
     }
@@ -81,25 +89,25 @@ function Home() {
     setMessageSent('');
   };
   return (
-    <div className='app '>
-      <input
+    <div className='flex flex-col items-center justify-center h-screen'>
+      <Input
         placeholder='Room'
         onChange={(event) => {
           setRoom(event.target.value);
         }}
       />
-      <button onClick={joinRoom}> Join Room</button>
-      <input
+      <Button onClick={joinRoom}> Join Room</Button>
+      <Input
         placeholder='Message'
         value={messageSent}
         onChange={(event) => {
           setMessageSent(event.target.value);
         }}
       />
-      <button onClick={sendMessage}> Send Message</button>
+      <Button onClick={sendMessage}> Send Message</Button>
       <h2>{joinedRoom}</h2>
       <h2> Messages:</h2>
-      <div className='message-container firefox-scroll'>
+      <div className='overflow-y-auto h-96 w-96 border-2 border-gray-300 p-4'>
         {messages.map((m, index) => {
           return (
             <div
