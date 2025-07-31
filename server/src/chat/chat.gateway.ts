@@ -57,7 +57,7 @@ export class ChatGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('send_message')
-  handleSendMessage(
+  async handleSendMessage(
     @MessageBody() data: { messageSent: string; room: string },
     @ConnectedSocket() client: Socket,
   ) {
@@ -65,11 +65,21 @@ export class ChatGateway implements OnGatewayConnection {
     console.log(
       `Message received from ${client.id} in room ${room}: ${messageSent}`,
     );
-    // TODO: Save message in database or perform any other logic here
-    //save message in database or perform any other logic here
-    client.broadcast.to(room).emit('receive_message', {
-      user: client['user'].email,
-      message: messageSent,
-    });
+    const messageCreated = await this.groupMemberService.messageGroup(
+      client['user'].sub,
+      room,
+      messageSent,
+    );
+    if (messageCreated) {
+      client.broadcast.to(room).emit('receive_message', {
+        user: client['user'].email,
+        message: messageSent,
+      });
+    } else {
+      console.error(`Failed to send message to room ${room}`);
+      return {
+        error: `Failed to send message to room ${room}`,
+      };
+    }
   }
 }

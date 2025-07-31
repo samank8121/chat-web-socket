@@ -27,9 +27,7 @@ export class AuthService {
 
   async signin(dto: AuthDto) {
     const user = await this.userRepository.findOne({
-      where: {
-        email: dto.email,
-      },
+      email: dto.email,
     });
     if (!user) throw new ForbiddenException('Invalid credentials');
     const pwMatches = await argon.verify(user.hash, dto.password);
