@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { SignInSchema, type SignInSchemaType } from '@/lib/zod-schema/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -37,7 +38,7 @@ const SignIn = () => {
       setUser({ token: token.access_token, email: formData.email, storeTime: Date.now() });
       navigate('/');
     } else {
-      alert('Sign in failed. Please check your credentials.');
+      toast('Sign in failed. Please check your credentials.');
       console.error('Error signing in:', token.error);
     }
   };

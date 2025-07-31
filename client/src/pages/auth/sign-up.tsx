@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { SignUpSchema, type SignUpSchemaType } from '@/lib/zod-schema/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -13,8 +14,8 @@ const SignUp = () => {
     repassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string[]> | null>(null);
-
   const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = SignUpSchema.safeParse(formData);
@@ -24,23 +25,30 @@ const SignUp = () => {
       return;
     }
     setErrors(null);
-    const token = await fetch(`${import.meta.env.VITE_APP_API_URL}/auth/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-      }),
-    }).then((response) => {
+    const token = await fetch(
+      `${import.meta.env.VITE_APP_API_URL}/auth/signup`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      }
+    ).then((response) => {
       return response.json();
     });
     if (token.access_token) {
-      setUser({ token: token.access_token, email: formData.email, storeTime: Date.now() });
+      setUser({
+        token: token.access_token,
+        email: formData.email,
+        storeTime: Date.now(),
+      });
       navigate('/');
     } else {
-      alert('Sign up failed. Please check your credentials.');
+      toast('Sign up failed. Please check your credentials.');
     }
   };
   const renderFieldError = (field: keyof SignUpSchemaType) => {

@@ -7,13 +7,67 @@ generator client {
   provider = "prisma-client-js"
 }
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   email String @unique
   hash  String
 
+  groupMemberships GroupMember[]
+  directMessages   DirectMessage[]
+
   @@map("users")
 }
 
+model Group {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String @unique
+
+  groupMemberships GroupMember[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId   String
+  groupId  String
+
+  user     User     @relation(fields: [userId], references: [id])
+  group    Group    @relation(fields: [groupId], references: [id])
+  messages GroupMessage[]
+
+  @@unique([userId, groupId])
+  @@map("group_members")
+}
+model GroupMessage {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content   String
+  groupMemberId   String
+
+  groupMember GroupMember @relation(fields: [groupMemberId], references: [id])
+
+  @@map("group_messages")
+}
+
+model DirectMessage {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("direct_messages")
+}

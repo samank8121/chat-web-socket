@@ -1,9 +1,13 @@
 import { io } from 'socket.io-client';
 import { getUser, resetUser } from '@/lib/store/user';
 import type { SocketError } from '@/types/socket-error';
+import { toast } from 'sonner';
 
 const createSocket = async () => {
-  if (!import.meta.env.VITE_APP_API_URL || !import.meta.env.VITE_APP_SOCKET_URL) {
+  if (
+    !import.meta.env.VITE_APP_API_URL ||
+    !import.meta.env.VITE_APP_SOCKET_URL
+  ) {
     throw new Error('API_URL and SOCKET_URL must be defined');
   }
   const user = getUser();
@@ -24,7 +28,7 @@ export const socketErrorHandler = (error: SocketError) => {
     }
   } else if (error && error.message) {
     console.error('Socket error:', error.message);
-    alert(`Error: ${error.message}`);
+    toast(`Error: ${error.message}`);
   }
 };
 
