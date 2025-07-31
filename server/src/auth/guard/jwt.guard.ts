@@ -15,7 +15,6 @@ export class WsJwtGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: Socket = context.switchToWs().getClient<Socket>();
     const token = this.extractTokenFromHandshake(client);
-    console.log('Token received:', token);
     if (!token) {
       throw new WsException({
         message: 'Unauthorized: No token provided',
@@ -27,7 +26,6 @@ export class WsJwtGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.config.get('TOKEN_SECRET_KEY'),
       });
-      console.log('Token payload:', payload);
       client['user'] = payload;
       return true;
     } catch {

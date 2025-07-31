@@ -1,3 +1,4 @@
+* ezafe kardan icon baraye send message
 * save o namayesh data ghabli
 * left the room
 * encrypt the messages

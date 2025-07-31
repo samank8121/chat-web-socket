@@ -2,16 +2,15 @@ import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
-  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
-//import { instrument } from '@socket.io/admin-ui';
 import { UseFilters, UseGuards } from '@nestjs/common';
 import { WsJwtGuard } from 'src/auth/guard/jwt.guard';
 import { WsExceptionFilter } from './filter/ws-exception.filter';
+import { GroupMemberService } from 'src/room/group-member.service';
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -22,24 +21,11 @@ import { WsExceptionFilter } from './filter/ws-exception.filter';
 })
 @UseGuards(WsJwtGuard)
 @UseFilters(WsExceptionFilter)
-export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
+export class ChatGateway implements OnGatewayConnection {
   @WebSocketServer() server: Server;
-  constructor() {}
-  afterInit() {
-    // instrument(this.server, {
-    //   auth: false,
-    //   mode: 'development',
-    //   namespaceName: '/admin',
-    // });
-  }
+  constructor(private readonly groupMemberService: GroupMemberService) {}
+
   handleConnection(@ConnectedSocket() client: Socket) {
-    // const token = client.handshake?.headers?.authorization?.split(' ')[1];
-    // try {
-    //   const payload = this.jwtService.verify(token);
-    //   client.data = { user: payload }; // Attach user to client
-    // } catch {
-    //   client.disconnect(); // Invalid token: disconnect
-    // }
     console.log(`Client connected: ${client.id}, ${client.nsp.name}`);
   }
 
@@ -57,13 +43,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
     return message;
   }
   @SubscribeMessage('join_room')
-  handleJoinRoom(
+  async handleJoinRoom(
     @MessageBody() room: string,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('server recieve room', room);
+    const joined = await this.groupMemberService.joinGroup(
+      client['user'].sub,
+      room,
+    );
+    //TODO: return saved messages
     client.join(room);
-    return `You joined room: ${room}`;
+    return `You joined room: ${room}, joined: ${joined}`;
   }
 
   @SubscribeMessage('send_message')
@@ -75,6 +65,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
     console.log(
       `Message received from ${client.id} in room ${room}: ${messageSent}`,
     );
+    // TODO: Save message in database or perform any other logic here
+    //save message in database or perform any other logic here
     client.broadcast.to(room).emit('receive_message', {
       user: client['user'].email,
       message: messageSent,

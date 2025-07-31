@@ -5,6 +5,7 @@ import { WsJwtGuard } from './auth/guard/jwt.guard';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RoomModule } from './room/room.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
     AuthModule,
     CommonModule,
+    RoomModule,
   ],
   providers: [ChatGateway, WsJwtGuard],
 })
