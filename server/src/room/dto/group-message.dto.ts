@@ -1,6 +1,8 @@
 export class GroupMessageDto {
   id: string;
   groupMemberId: string;
+  user?: { email: string };
+  groupId?: string;
   content: string;
 }
 
@@ -12,4 +14,13 @@ export class UpdateGroupMessageDto {
   groupMemberId: string;
 
   content: string;
+}
+
+export class GroupMessageResponseDto {
+  content?: {
+    room: string;
+    user: string;
+    message: string;
+  };
+  error: string | null;
 }

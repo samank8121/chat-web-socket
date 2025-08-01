@@ -51,9 +51,16 @@ export class ChatGateway implements OnGatewayConnection {
       client['user'].sub,
       room,
     );
-    //TODO: return saved messages
     client.join(room);
-    return `You joined room: ${room}, joined: ${joined}`;
+    if (joined) {
+      const messages = await this.groupMemberService.getGroupMessages(
+        client['user'].sub,
+        client['user'].email,
+        room,
+      );
+      return messages;
+    }
+    return [];
   }
 
   @SubscribeMessage('send_message')
@@ -65,13 +72,14 @@ export class ChatGateway implements OnGatewayConnection {
     console.log(
       `Message received from ${client.id} in room ${room}: ${messageSent}`,
     );
-    const messageCreated = await this.groupMemberService.messageGroup(
+    const messageCreated = await this.groupMemberService.writeMessageInGroup(
       client['user'].sub,
       room,
       messageSent,
     );
     if (messageCreated) {
       client.broadcast.to(room).emit('receive_message', {
+        room: room,
         user: client['user'].email,
         message: messageSent,
       });

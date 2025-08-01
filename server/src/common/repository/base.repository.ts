@@ -3,7 +3,11 @@ import { PrismaService } from 'src/common/prisma/prisma.service';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export abstract class BaseRepository<T, CreateDto = any, UpdateDto = any> {
+export abstract class BaseRepository<
+  T = any,
+  CreateDto = any,
+  UpdateDto = any,
+> {
   protected model: any;
 
   constructor(
@@ -27,11 +31,17 @@ export abstract class BaseRepository<T, CreateDto = any, UpdateDto = any> {
     });
   }
 
-  async findMany(where?: any, include?: any, orderBy?: any): Promise<T[]> {
+  async findMany(
+    where?: any,
+    include?: any,
+    orderBy?: any,
+    take?: number,
+  ): Promise<T[]> {
     return this.model.findMany({
       where,
       include,
       orderBy,
+      take,
     });
   }
 

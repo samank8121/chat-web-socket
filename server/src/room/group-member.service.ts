@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { GroupMemberRepository } from './repository/group-member.repository';
 import { GroupRepository } from './repository/group.repository';
 import { GroupMessageRepository } from './repository/group-message.repository';
+import { GroupMessageResponseDto } from './dto';
 
 @Injectable()
 export class GroupMemberService {
@@ -42,7 +43,7 @@ export class GroupMemberService {
     }
     return false;
   }
-  async messageGroup(
+  async writeMessageInGroup(
     userId: string,
     groupName: string,
     content: string,
@@ -67,5 +68,41 @@ export class GroupMemberService {
       console.error('Error joining group:', error);
     }
     return false;
+  }
+  async getGroupMessages(
+    userId: string,
+    email: string,
+    groupName: string,
+  ): Promise<GroupMessageResponseDto[] | []> {
+    try {
+      const group = await this.groupRepository.findByName(groupName);
+      if (!group) {
+        throw new Error(`Group ${groupName} does not exist`);
+      }
+      const groupMember = await this.groupMemberRepository.findOne({
+        userId_groupId: {
+          userId,
+          groupId: group.id,
+        },
+      });
+      const messages = await this.groupMessageRepository.findMany(
+        {
+          groupMemberId: groupMember.id,
+        },
+        null,
+        { createdAt: 'desc' },
+        50,
+      );
+      return messages.map((message) => ({
+        content: {
+          room: groupName,
+          user: email,
+          message: message.content,
+        },
+      })) as GroupMessageResponseDto[];
+    } catch (error) {
+      console.error('Error fetching group messages:', error);
+      return [{ error: 'An error occurred' }] as GroupMessageResponseDto[];
+    }
   }
 }

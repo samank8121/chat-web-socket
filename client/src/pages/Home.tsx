@@ -2,7 +2,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import SocketEvents, { ME } from '@/lib/constant';
 import createSocket, { socketErrorHandler } from '@/lib/socket';
-import type { MessageType } from '@/types/message';
+import { useUserStore } from '@/lib/store/user';
+import type { BulkMessageType, MessageType } from '@/types/message';
 import type { SocketError } from '@/types/socket-error';
 import { useEffect, useRef, useState } from 'react';
 import type { Socket } from 'socket.io-client';
@@ -11,11 +12,11 @@ const Home = () => {
   const [room, setRoom] = useState('');
   const [messageSent, setMessageSent] = useState('');
   const [messages, setMessages] = useState<MessageType[]>([]);
-  const [joinedRoom, setJoinedRoom] = useState('');
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
-  
-   useEffect(() => { 
+  const currentUser = useUserStore((state) => state.user);
+
+   useEffect(() => {
     const initializeSocket = async () => {
       try {
         const socket = await createSocket();
@@ -43,7 +44,7 @@ const Home = () => {
       console.log('Message received:', data);
       setMessages([
         ...messages,
-        { message: data.message, user: data.user, status: 'received' },
+        { message: data.message, user: data.user, room: data.room, status: 'received' },
       ]);
     });
     if (lastMessageRef && lastMessageRef.current) {
@@ -59,9 +60,20 @@ const Home = () => {
     console.log('Joining room:', room);
     if (room !== '') {
       console.log('Joining room(if):', room);
-      socket?.emit(SocketEvents.JOIN_ROOM, room, (data: string) => {
+      socket?.emit(SocketEvents.JOIN_ROOM, room, (data: BulkMessageType[]) => {
         console.log('Joining room(callback):', room);
-        setJoinedRoom(data);
+        setMessages(data.map((msg) => {
+          let user = ME;
+          if (msg.content && msg.content.user) {
+            user = msg.content.user === currentUser?.email ? ME : msg.content.user;
+          }
+          return {
+            message: msg.content?.message || '',
+            user,
+            room: msg.content?.room || '',
+            status: 'received',
+          };
+        }));
       });
     }
   };
@@ -69,7 +81,7 @@ const Home = () => {
   const sendMessage = () => {
     setMessages([
       ...messages,
-      { message: messageSent, user: ME, status: 'sent' },
+      { message: messageSent, user: ME, room,status: 'sent' },
     ]);
     socket?.emit(SocketEvents.SEND_MESSAGE, { messageSent, room });
     setMessageSent('');
@@ -84,8 +96,7 @@ const Home = () => {
           }}
         />
         <Button onClick={joinRoom}> Join Room</Button>
-      </div>
-      {joinedRoom && <h2>{joinedRoom}</h2>}
+      </div>      
       <div className='p-4 overflow-y-auto border-2 border-gray-300 rounded-2xl w-full h-96'>        
         {messages.length === 0 && <h2 className='text-gray-500'>Messages</h2>}
         {messages.map((m, index) => {
