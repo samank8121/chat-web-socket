@@ -13,6 +13,8 @@ import Header from '@/components/header';
 import { getUser, resetUser, useUserStore } from '@/lib/store/user';
 import { useEffect } from 'react';
 import { isExpired } from './lib/utils';
+import ChangePassword from './pages/auth/change-password';
+import { Toaster } from 'sonner';
 
 const Layout = () => {
   const hasHydrated = useUserStore((s) => s.hasHydrated);
@@ -46,9 +48,11 @@ const Layout = () => {
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
       <div className='flex flex-col min-h-screen p-2 container mx-auto'>
         <main>
+          
           <Header />
           <Outlet />
         </main>
+        <Toaster />
       </div>
     </ThemeProvider>
   );
@@ -61,6 +65,7 @@ function App() {
         <Route index element={<Home />} />
         <Route path='/signin' element={<SignIn />} />
         <Route path='/signup' element={<SignUp />} />
+        <Route path='/change-password' element={<ChangePassword />} />
       </Route>
     </Routes>
   );

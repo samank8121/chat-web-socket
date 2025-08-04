@@ -28,7 +28,7 @@ export const socketErrorHandler = (error: SocketError) => {
     }
   } else if (error && error.message) {
     console.error('Socket error:', error.message);
-    toast(`Error: ${error.message}`);
+    toast('Error', { description: error.message });
   }
 };
 

@@ -1,10 +1,9 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
-
 
 /**
  * Check if a given timestamp has expired based on a time duration
@@ -17,7 +16,9 @@ export function isExpired(storedTime: number, duration: string): boolean {
   const match = duration.match(/^(\d+)([hmd])$/);
 
   if (!match) {
-    throw new Error(`Invalid duration format: ${duration}. Use formats like "1h", "30m", or "2d".`);
+    throw new Error(
+      `Invalid duration format: ${duration}. Use formats like "1h", "30m", or "2d".`
+    );
   }
 
   const value = parseInt(match[1], 10);
@@ -40,4 +41,71 @@ export function isExpired(storedTime: number, duration: string): boolean {
   }
 
   return storedTime + durationMs < now;
+}
+
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+interface FetchOptions<TBody = unknown> {
+  method?: HttpMethod;
+  headers?: HeadersInit;
+  body?: TBody;
+  queryParams?: Record<string, string | number | boolean>;
+  signal?: AbortSignal;
+}
+
+export async function fetchUtil<TResponse = unknown, TBody = unknown>(
+  url: string,
+  options: FetchOptions<TBody> = {}
+): Promise<TResponse> {
+  const { method = 'GET', headers = {}, body, queryParams, signal } = options;
+
+  // Build query string
+  const queryString = queryParams
+    ? '?' +
+      new URLSearchParams(
+        Object.entries(queryParams).reduce<Record<string, string>>(
+          (acc, [key, val]) => {
+            acc[key] = String(val);
+            return acc;
+          },
+          {}
+        )
+      ).toString()
+    : '';
+
+  const fullUrl = url + queryString;
+
+  const isJSON = !(
+    body instanceof FormData ||
+    body instanceof Blob ||
+    body instanceof ArrayBuffer
+  );
+
+  const fetchOptions: RequestInit = {
+    method,
+    headers: {
+      ...(isJSON && body ? { 'Content-Type': 'application/json' } : {}),
+      ...headers,
+    },
+    ...(method !== 'GET'
+      ? { body: isJSON ? JSON.stringify(body) : (body as BodyInit) }
+      : {}),
+    signal,
+  };
+
+  const res = await fetch(fullUrl, fetchOptions);
+
+  if (!res.ok) {
+    const errorText = await res.json();
+    throw new Error(
+      errorText.message
+    );
+  }
+
+  const contentType = res.headers.get('content-type');
+  if (contentType?.includes('application/json')) {
+    return res.json() as Promise<TResponse>;
+  }
+
+  return res.text() as Promise<TResponse>;
 }
