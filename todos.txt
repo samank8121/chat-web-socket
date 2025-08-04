@@ -1,5 +1,4 @@
 * refresh token on relogin or active session
-* save o namayesh data ghabli
 * ezafe kardan icon baraye send message
 * left the room
 * encrypt the messages

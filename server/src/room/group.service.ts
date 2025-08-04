@@ -1,10 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateGroupDto, GroupDto, UpdateGroupDto } from './dto/group.dto';
-import { GroupRepository } from './repository/group.repository';
+import { BaseRepository } from 'src/common/repository/base.repository';
 
 @Injectable()
 export class GroupService {
-  constructor(private readonly groupRepository: GroupRepository) {}
+  constructor(
+    @Inject('GroupRepository')
+    private readonly groupRepository: BaseRepository,
+  ) {}
 
   async createGroup(data: CreateGroupDto): Promise<GroupDto> {
     return this.groupRepository.create(data);
@@ -22,7 +25,7 @@ export class GroupService {
     return this.groupRepository.delete(id);
   }
   async existsGroup(name: string): Promise<boolean> {
-    const group = await this.groupRepository.findByName(name);
+    const group = await this.groupRepository.findOne({ name });
     return group && group.name !== null;
   }
 }

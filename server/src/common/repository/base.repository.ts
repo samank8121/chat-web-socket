@@ -8,10 +8,10 @@ export abstract class BaseRepository<
   CreateDto = any,
   UpdateDto = any,
 > {
-  protected model: any;
+  public model: any;
 
   constructor(
-    protected readonly prisma: PrismaService,
+    public readonly prisma: PrismaService,
     modelName: keyof PrismaClient,
   ) {
     this.model = (prisma as any)[modelName];
