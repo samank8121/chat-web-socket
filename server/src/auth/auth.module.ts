@@ -2,10 +2,20 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtService } from '@nestjs/jwt';
-import { UserRepository } from './repository/user.repository';
+import { CreateUserDto, UpdateUserDto, UserDto } from './dto';
+import { createRepositoryClass } from 'src/common/repository/base.respository.factory';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtService, UserRepository],
+  providers: [
+    AuthService,
+    JwtService,
+    {
+      provide: 'UserRepository',
+      useClass: createRepositoryClass<UserDto, CreateUserDto, UpdateUserDto>(
+        'user',
+      ),
+    },
+  ],
 })
 export class AuthModule {}

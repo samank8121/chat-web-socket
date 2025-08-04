@@ -1,20 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { GroupMemberRepository } from './repository/group-member.repository';
-import { GroupRepository } from './repository/group.repository';
-import { GroupMessageRepository } from './repository/group-message.repository';
+import { Inject, Injectable } from '@nestjs/common';
 import { GroupMessageResponseDto } from './dto';
+import { BaseRepository } from 'src/common/repository/base.repository';
 
 @Injectable()
 export class GroupMemberService {
   constructor(
-    private readonly groupRepository: GroupRepository,
-    private readonly groupMemberRepository: GroupMemberRepository,
-    private readonly groupMessageRepository: GroupMessageRepository,
+    @Inject('GroupRepository')
+    private readonly groupRepository: BaseRepository,
+    @Inject('GroupMemberRepository')
+    private readonly groupMemberRepository: BaseRepository,
+    @Inject('GroupMessageRepository')
+    private readonly groupMessageRepository: BaseRepository,
   ) {}
 
   async joinGroup(userId: string, groupName: string): Promise<boolean> {
     try {
-      let group = await this.groupRepository.findByName(groupName);
+      let group = await this.groupRepository.findOne({ name: groupName });
       let groupExists = true;
       if (!group) {
         groupExists = false;
@@ -49,7 +50,7 @@ export class GroupMemberService {
     content: string,
   ): Promise<boolean> {
     try {
-      const group = await this.groupRepository.findByName(groupName);
+      const group = await this.groupRepository.findOne({ name: groupName });
       if (!group) {
         throw new Error(`Group ${groupName} does not exist`);
       }
@@ -75,7 +76,7 @@ export class GroupMemberService {
     groupName: string,
   ): Promise<GroupMessageResponseDto[] | []> {
     try {
-      const group = await this.groupRepository.findByName(groupName);
+      const group = await this.groupRepository.findOne({ name: groupName });
       if (!group) {
         throw new Error(`Group ${groupName} does not exist`);
       }

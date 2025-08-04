@@ -1,14 +1,15 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { AuthDto } from './dto/auth.dto';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UserRepository } from './repository/user.repository';
+import { BaseRepository } from 'src/common/repository/base.repository';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userRepository: UserRepository,
+    @Inject('UserRepository')
+    private readonly userRepository: BaseRepository,
     private config: ConfigService,
     private jwt: JwtService,
   ) {}
