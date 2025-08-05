@@ -1,5 +1,3 @@
-* block user if calls too much apis
-* encrypt the messages
 * refresh token on relogin or active session
 * ezafe kardan icon baraye send message
 * left the room
