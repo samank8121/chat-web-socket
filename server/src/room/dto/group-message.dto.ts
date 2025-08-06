@@ -17,10 +17,10 @@ export class UpdateGroupMessageDto {
 }
 
 export class GroupMessageResponseDto {
-  content?: {
-    room: string;
+  contents?: {
     user: string;
     message: string;
-  };
-  error: string | null;
+  }[];
+  room: string;
+  error?: string | null;
 }

@@ -47,20 +47,31 @@ export class ChatGateway implements OnGatewayConnection {
     @MessageBody() room: string,
     @ConnectedSocket() client: Socket,
   ) {
-    const joined = await this.groupMemberService.joinGroup(
+    const joinGroup = await this.groupMemberService.joinGroup(
       client['user'].sub,
       room,
     );
     client.join(room);
-    if (joined) {
+    console.log(joinGroup);
+    if (!joinGroup.joined) {
+      return { error: 'There is a problem in joining group try later' };
+    }
+    if (!joinGroup.newGroup) {
       const messages = await this.groupMemberService.getGroupMessages(
-        client['user'].sub,
         client['user'].email,
         room,
       );
       return messages;
     }
-    return [];
+    return { room };
+  }
+  @SubscribeMessage('leave_room')
+  async handleLeftRoom(
+    @MessageBody() room: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.leave(room);
+    return true;
   }
 
   @SubscribeMessage('send_message')
@@ -70,7 +81,7 @@ export class ChatGateway implements OnGatewayConnection {
   ) {
     const { messageSent, room } = data;
     console.log(
-      `Message received from ${client.id} in room ${room}: ${messageSent}`,
+      `Message received from ${client['user'].sub} in room ${room}: ${messageSent}`,
     );
     const messageCreated = await this.groupMemberService.writeMessageInGroup(
       client['user'].sub,

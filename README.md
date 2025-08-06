@@ -1,13 +1,14 @@
 ## Description
 This is a chat project consists of two subprojects:
-- **Client**: Built with React, vite, tailwind, shadcn, zustand and socket.io
-- **Server**: Built with Nest.js, prisma, postgresql
+- **Client**: Built with React, vite, tailwind, shadcn, zustand, zod and socket.io
+- **Server**: Built with Nest.js, prisma, redis, postgresql
 
 ## Key Features
 - Authentication
 - Join a room
 - Broadcast messages
 - Direct chat with another user
+- API Calls limit
 
 ## Project Setup
 

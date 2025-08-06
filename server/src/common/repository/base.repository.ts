@@ -34,6 +34,7 @@ export abstract class BaseRepository<
   async findMany(
     where?: any,
     include?: any,
+    select?: any,
     orderBy?: any,
     take?: number,
   ): Promise<T[]> {
@@ -42,6 +43,7 @@ export abstract class BaseRepository<
       include,
       orderBy,
       take,
+      select,
     });
   }
 
