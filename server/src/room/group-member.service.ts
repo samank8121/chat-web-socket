@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { GroupMessageResponseDto } from './dto';
+import { GroupMessageResponseDto, JoinGroup } from './dto';
 import { BaseRepository } from 'src/common/repository/base.repository';
 
 @Injectable()
@@ -13,36 +13,42 @@ export class GroupMemberService {
     private readonly groupMessageRepository: BaseRepository,
   ) {}
 
-  async joinGroup(userId: string, groupName: string): Promise<boolean> {
+  async joinGroup(userId: string, groupName: string): Promise<JoinGroup> {
+    let result = { joined: false, newGroup: false };
     try {
       let group = await this.groupRepository.findOne({ name: groupName });
-      let groupExists = true;
       if (!group) {
-        groupExists = false;
         group = await this.groupRepository.create({
           name: groupName,
         });
-      }
-      let createdGroupMember = null;
-      if (groupExists) {
-        createdGroupMember = await this.groupMemberRepository.findOne({
+
+        await this.groupMemberRepository.create({
+          userId,
+          groupId: group.id,
+        });
+        result = { joined: true, newGroup: true };
+        return result;
+      } else {
+        const groupMember = await this.groupMemberRepository.findOne({
           userId_groupId: {
             userId,
             groupId: group.id,
           },
         });
+        if (!groupMember) {
+          await this.groupMemberRepository.create({
+            userId,
+            groupId: group.id,
+          });
+        }
+        result = { joined: true, newGroup: false };
       }
-      if (!createdGroupMember) {
-        createdGroupMember = await this.groupMemberRepository.create({
-          userId,
-          groupId: group.id,
-        });
-      }
-      return createdGroupMember ? true : false;
+
+      return result;
     } catch (error) {
       console.error('Error joining group:', error);
     }
-    return false;
+    return result;
   }
   async writeMessageInGroup(
     userId: string,
@@ -54,56 +60,73 @@ export class GroupMemberService {
       if (!group) {
         throw new Error(`Group ${groupName} does not exist`);
       }
+      console.log('group id', group.id);
       const groupMember = await this.groupMemberRepository.findOne({
         userId_groupId: {
           userId,
           groupId: group.id,
         },
       });
+      console.log('group member', groupMember);
       const groupMessage = await this.groupMessageRepository.create({
         groupMemberId: groupMember.id,
         content,
       });
       return groupMessage ? true : false;
     } catch (error) {
-      console.error('Error joining group:', error);
+      console.error('Error writing message to group:', error);
     }
     return false;
   }
   async getGroupMessages(
-    userId: string,
     email: string,
     groupName: string,
-  ): Promise<GroupMessageResponseDto[] | []> {
+  ): Promise<GroupMessageResponseDto> {
     try {
       const group = await this.groupRepository.findOne({ name: groupName });
       if (!group) {
         throw new Error(`Group ${groupName} does not exist`);
       }
-      const groupMember = await this.groupMemberRepository.findOne({
-        userId_groupId: {
-          userId,
+      const groupMembers = await this.groupMemberRepository.findMany(
+        {
           groupId: group.id,
         },
-      });
-      const messages = await this.groupMessageRepository.findMany(
-        {
-          groupMemberId: groupMember.id,
-        },
         null,
-        { createdAt: 'desc' },
-        50,
+        { id: true },
       );
-      return messages.map((message) => ({
-        content: {
-          room: groupName,
-          user: email,
+
+      console.log('group member ids', groupMembers);
+      let contents = [];
+      if (groupMembers && groupMembers.length > 0) {
+        const groupMemberIds = groupMembers.map((member) => member.id);
+        const messages = await this.groupMessageRepository.findMany(
+          {
+            groupMemberId: {
+              in: groupMemberIds,
+            },
+          },
+          {
+            groupMember: {
+              include: {
+                user: true,
+              },
+            },
+          },
+          null,
+          { createdAt: 'desc' },
+          50,
+        );
+        console.log('messages', messages);
+        contents = messages.map((message) => ({
+          user: message.groupMember.user.email,
           message: message.content,
-        },
-      })) as GroupMessageResponseDto[];
+        }));
+      }
+
+      return { room: groupName, contents };
     } catch (error) {
       console.error('Error fetching group messages:', error);
-      return [{ error: 'An error occurred' }] as GroupMessageResponseDto[];
+      return { error: 'An error occurred' } as GroupMessageResponseDto;
     }
   }
 }

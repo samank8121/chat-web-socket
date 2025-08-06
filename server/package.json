@@ -20,12 +20,14 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nest-lab/throttler-storage-redis": "^1.1.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^10.0.0",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.4.20",
+    "@nestjs/throttler": "^6.4.0",
     "@nestjs/websockets": "^10.4.20",
     "@prisma/client": "^6.12.0",
     "@socket.io/admin-ui": "^0.5.1",
@@ -33,6 +35,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "install": "^0.13.0",
+    "ioredis": "^5.7.0",
     "npm": "^11.5.1",
     "passport-jwt": "^4.0.1",
     "prisma": "^6.12.0",

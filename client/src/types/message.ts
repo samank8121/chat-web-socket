@@ -1,11 +1,12 @@
 export type MessageType = {
-  room: string;
+  //room: string;
   message: string;
   user: string;
   status: 'sent' | 'received';
 };
 
 export type BulkMessageType = {
-  content?: MessageType;
-  error: string | null;
+  contents?: MessageType[];
+  room: string;
+  error?: string | null;
 };

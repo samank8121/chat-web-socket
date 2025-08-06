@@ -17,6 +17,9 @@ const Header = () => {
     resetUser();
     navigate('/signin');
   };
+  const ChangePassword = () => {
+    navigate('/change-password');
+  };
   return (
     <header className='flex items-center justify-between p-4'>
       {user && user.token ? (
@@ -26,6 +29,9 @@ const Header = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align='end'>
             <DropdownMenuItem>{user.email || 'Anonymous'}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => ChangePassword()}>
+              Change Password
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => logout()}>
               Sign Out

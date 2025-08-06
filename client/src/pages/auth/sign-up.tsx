@@ -6,6 +6,8 @@ import { SignUpSchema, type SignUpSchemaType } from '@/lib/zod-schema/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { fetchUtil } from '@/lib/utils';
+import type { AccessTokenType } from '@/types/access-token';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -25,30 +27,30 @@ const SignUp = () => {
       return;
     }
     setErrors(null);
-    const token = await fetch(
-      `${import.meta.env.VITE_APP_API_URL}/auth/signup`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+    try {
+      const token = await fetchUtil<AccessTokenType>(
+        `${import.meta.env.VITE_APP_API_URL}/auth/signup`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
+      if (token.access_token) {
+        setUser({
+          token: token.access_token,
           email: formData.email,
-          password: formData.password,
-        }),
+          storeTime: Date.now(),
+        });
+        navigate('/');
       }
-    ).then((response) => {
-      return response.json();
-    });
-    if (token.access_token) {
-      setUser({
-        token: token.access_token,
-        email: formData.email,
-        storeTime: Date.now(),
-      });
-      navigate('/');
-    } else {
-      toast('Sign up failed. Please check your credentials.');
+    } catch (error) {
+      toast('Error', { description: (error as Error).message });
     }
   };
   const renderFieldError = (field: keyof SignUpSchemaType) => {

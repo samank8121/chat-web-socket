@@ -4,6 +4,7 @@ import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { BaseRepository } from 'src/common/repository/base.repository';
+import { ChangePasswordDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +36,26 @@ export class AuthService {
     if (!pwMatches) throw new ForbiddenException('Invalid credentials');
     return this.signToken(user.id, user.email);
   }
+  async changePassword(dto: ChangePasswordDto) {
+    const user = await this.userRepository.findOne({
+      email: dto.email,
+    });
+    if (!user) throw new ForbiddenException('Invalid credentials');
+    const pwMatches = await argon.verify(user.hash, dto.oldPassword);
 
+    if (!pwMatches) throw new ForbiddenException('Invalid credentials');
+
+    const hash = await argon.hash(dto.newPassword);
+    try {
+      const response = await this.userRepository.update(user.id, {
+        email: dto.email,
+        hash,
+      });
+      return this.signToken(response.id, response.email);
+    } catch {
+      throw new ForbiddenException('User already exists');
+    }
+  }
   async signToken(
     userId: string,
     email: string,
