@@ -8,7 +8,6 @@ export class WsExceptionFilter {
   catch(exception: WsException, host: ArgumentsHost) {
     const client: Socket = host.switchToWs().getClient();
     const error = exception.getError();
-    console.log(error);
     client.emit('error', {
       message:
         typeof error === 'string'

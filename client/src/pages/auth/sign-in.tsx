@@ -34,7 +34,6 @@ const SignIn = () => {
           },
         }
       );
-      console.log(response);
       if (response.access_token) {
         setUser({
           token: response.access_token,

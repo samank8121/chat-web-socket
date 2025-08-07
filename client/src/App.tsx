@@ -34,7 +34,6 @@ const Layout = () => {
       user.token === '' ||
       !user.storeTime      
     ) {
-      console.log('User is not authenticated or token is expired');
       navigate('/signin');
       return;
     }

@@ -30,9 +30,11 @@ export class GroupMemberService {
         return result;
       } else {
         const groupMember = await this.groupMemberRepository.findOne({
-          userId_groupId: {
-            userId,
-            groupId: group.id,
+          user: {
+            id: userId,
+          },
+          group: {
+            id: group.id,
           },
         });
         if (!groupMember) {
@@ -60,14 +62,14 @@ export class GroupMemberService {
       if (!group) {
         throw new Error(`Group ${groupName} does not exist`);
       }
-      console.log('group id', group.id);
       const groupMember = await this.groupMemberRepository.findOne({
-        userId_groupId: {
-          userId,
-          groupId: group.id,
+        user: {
+          id: userId,
+        },
+        group: {
+          id: group.id,
         },
       });
-      console.log('group member', groupMember);
       const groupMessage = await this.groupMessageRepository.create({
         groupMemberId: groupMember.id,
         content,
@@ -87,43 +89,55 @@ export class GroupMemberService {
       if (!group) {
         throw new Error(`Group ${groupName} does not exist`);
       }
-      const groupMembers = await this.groupMemberRepository.findMany(
-        {
-          groupId: group.id,
-        },
-        null,
-        { id: true },
-      );
 
-      console.log('group member ids', groupMembers);
-      let contents = [];
-      if (groupMembers && groupMembers.length > 0) {
-        const groupMemberIds = groupMembers.map((member) => member.id);
-        const messages = await this.groupMessageRepository.findMany(
+      const isGroupMember = await this.groupMemberRepository.findOne({
+        group: {
+          id: group.id,
+        },
+        user: {
+          email: email,
+        },
+      });
+      if (isGroupMember) {
+        const groupMembers = await this.groupMemberRepository.findMany(
           {
-            groupMemberId: {
-              in: groupMemberIds,
-            },
-          },
-          {
-            groupMember: {
-              include: {
-                user: true,
-              },
-            },
+            groupId: group.id,
           },
           null,
-          { createdAt: 'desc' },
-          50,
+          { id: true },
         );
-        console.log('messages', messages);
-        contents = messages.map((message) => ({
-          user: message.groupMember.user.email,
-          message: message.content,
-        }));
-      }
+        let contents = [];
+        if (groupMembers && groupMembers.length > 0) {
+          const groupMemberIds = groupMembers.map((member) => member.id);
+          const messages = await this.groupMessageRepository.findMany(
+            {
+              groupMemberId: {
+                in: groupMemberIds,
+              },
+            },
+            {
+              groupMember: {
+                include: {
+                  user: true,
+                },
+              },
+            },
+            null,
+            { createdAt: 'asc' },
+            50,
+          );
+          contents = messages.map((message) => ({
+            user: message.groupMember.user.email,
+            message: message.content,
+          }));
+        }
 
-      return { room: groupName, contents };
+        return { room: groupName, contents };
+      } else {
+        return {
+          error: 'You are not part of this group',
+        } as GroupMessageResponseDto;
+      }
     } catch (error) {
       console.error('Error fetching group messages:', error);
       return { error: 'An error occurred' } as GroupMessageResponseDto;

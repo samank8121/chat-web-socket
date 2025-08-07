@@ -29,7 +29,6 @@ export class WsJwtGuard implements CanActivate {
       client['user'] = payload;
       return true;
     } catch {
-      console.log('Invalid token');
       throw new WsException({
         message: 'Unauthorized: Invalid token',
         code: errorCode.INVALID_TOKEN,

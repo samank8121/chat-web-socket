@@ -44,7 +44,6 @@ const Home = () => {
       socketErrorHandler(error);
     });
     socket.on(SocketEvents.RECEIVE_MESSAGE, (data: MessageType) => {
-      console.log('Message received:', data);
       setMessages([
         ...messages,
         { message: data.message, user: data.user, status: 'received' },
@@ -119,22 +118,23 @@ const Home = () => {
         {!joined && <Button onClick={joinRoom}> Join Room</Button>}
         {joined && <Button onClick={leftRoom}> Left Room</Button>}
       </div>
-      <div className='p-4 overflow-y-auto border-2 border-gray-300 rounded-2xl w-full min-h-5/7'>
-        {messages.length === 0 && <h2 className='text-gray-500'>Messages</h2>}
-        {messages.map((m, index) => {
-          return (
-            <div
-              key={index}
-              ref={index === messages.length - 1 ? lastMessageRef : null}
-              className='overflow-y-auto'
-            >
-              <div className='my-2 p-2 border-1 rounded-xl'>
-                <span className='font-bold italic text-green-300'>{`${m.user}: `}</span>
-                <span>{m.message}</span>
+      <div className='p-1 border-2 border-gray-300 rounded-2xl w-full min-h-5/7'>
+        <div className='p-4 overflow-y-auto border-none w-full h-full dark:custom-scrollbar custom-scrollbar'>
+          {messages.length === 0 && <h2 className='text-gray-500'>Messages</h2>}
+          {messages.map((m, index) => {
+            return (
+              <div
+                key={index}
+                ref={index === messages.length - 1 ? lastMessageRef : null}
+              >
+                <div className='my-2 p-2 border-1 rounded-xl'>
+                  <span className='font-bold italic text-green-700 dark:text-green-400'>{`${m.user}: `}</span>
+                  <span>{m.message}</span>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       <div className='flex gap-2 w-full'>

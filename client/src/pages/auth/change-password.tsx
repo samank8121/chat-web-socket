@@ -30,7 +30,6 @@ const ChangePassword = () => {
     const result = ChangePasswordSchema.safeParse(formData);
     if (!result.success) {
       const flatternError = result.error.flatten().fieldErrors;
-      console.error('Validation errors:', flatternError);
       setErrors(flatternError);
       return;
     }

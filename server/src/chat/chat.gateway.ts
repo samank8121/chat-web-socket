@@ -52,7 +52,6 @@ export class ChatGateway implements OnGatewayConnection {
       room,
     );
     client.join(room);
-    console.log(joinGroup);
     if (!joinGroup.joined) {
       return { error: 'There is a problem in joining group try later' };
     }

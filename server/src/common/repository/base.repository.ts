@@ -25,7 +25,7 @@ export abstract class BaseRepository<
   }
 
   async findOne(where: any, include?: any): Promise<T | null> {
-    return this.model.findUnique({
+    return this.model.findFirst({
       where,
       include,
     });

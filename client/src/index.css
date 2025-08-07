@@ -118,44 +118,40 @@
     @apply bg-background text-foreground;
   }
 }
-@layer utilities {
-  .custom-scrollbar {
-    @apply max-h-[500px];
-    scrollbar-width: thin; /* Firefox: Slim scrollbar */
-    scrollbar-color: #68d391 #2d3748; /* Firefox: Thumb and track colors (dark mode) */
+@utility custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.gray.800') theme('colors.gray.200');
+
+  
+  &::-webkit-scrollbar {
+    @apply w-2;
+    /* Width: 8px */
   }
 
-  /* Respect dark mode variant */
-  .dark .custom-scrollbar {
-    scrollbar-color: #68d391 #2d3748; /* Consistent dark mode colors for Firefox */
+  &::-webkit-scrollbar-track {
+    @apply bg-gray-800 rounded-full;
   }
 
-  /* Webkit browsers (Chrome, Safari, Edge) */
-  .custom-scrollbar::-webkit-scrollbar {
-    @apply w-2; /* Width: 8px */
+  &::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 rounded-full border-2 border-gray-800;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-gray-800 rounded-full; /* Dark track for dark mode */
+  &::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-200;
+  }
+  .dark &
+  {
+    scrollbar-color: theme('colors.gray.200') theme('colors.gray.800');
+  }
+  .dark &::-webkit-scrollbar-track {
+    @apply bg-gray-200 rounded-full;
   }
 
-  .dark .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-gray-800; /* Ensure track stays dark in dark mode */
+  .dark &::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full border-2 border-gray-800;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-green-400 rounded-full border-2 border-gray-800; /* Green thumb, rounded, with border */
-  }
-
-  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-green-400 border-gray-800; /* Consistent thumb in dark mode */
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-green-300; /* Lighter green on hover */
-  }
-
-  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-green-300; /* Consistent hover in dark mode */
+  .dark &::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-200;
   }
 }

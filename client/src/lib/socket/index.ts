@@ -27,7 +27,6 @@ export const socketErrorHandler = (error: SocketError) => {
       window.location.href = '/signin';
     }
   } else if (error && error.message) {
-    console.error('Socket error:', error.message);
     toast('Error', { description: error.message });
   }
 };
