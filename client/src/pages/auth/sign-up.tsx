@@ -28,6 +28,7 @@ const SignUp = () => {
     }
     setErrors(null);
     try {
+      console.log('Submitting form data:', formData);
       const token = await fetchUtil<AccessTokenType>(
         `${import.meta.env.VITE_APP_API_URL}/auth/signup`,
         {
@@ -35,10 +36,10 @@ const SignUp = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
+          body: {
             email: formData.email,
             password: formData.password,
-          }),
+          },
         }
       );
       if (token.access_token) {
@@ -50,6 +51,7 @@ const SignUp = () => {
         navigate('/');
       }
     } catch (error) {
+      console.error('Error during sign up');
       toast('Error', { description: (error as Error).message });
     }
   };

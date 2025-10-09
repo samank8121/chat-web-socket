@@ -6,9 +6,11 @@ import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RoomModule } from './room/room.module';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { seconds, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import Redis from 'ioredis';
+// import { APP_GUARD } from '@nestjs/core';
+// import { CustomThrottlerGuard } from './common/throttler/guard';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import Redis from 'ioredis';
       useFactory: (config: ConfigService) => ({
         throttlers: [
           {
-            ttl: config.get('REDEIS_THROTTLE_TTL'),
+            ttl: seconds(config.get('REDEIS_THROTTLE_TTL')),
             limit: config.get('REDEIS_THROTTLE_LIMIT'),
           },
         ],
@@ -44,6 +46,13 @@ import Redis from 'ioredis';
     CommonModule,
     RoomModule,
   ],
-  providers: [ChatGateway, WsJwtGuard],
+  providers: [
+    ChatGateway,
+    WsJwtGuard,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: CustomThrottlerGuard,
+    // },
+  ],
 })
 export class AppModule {}

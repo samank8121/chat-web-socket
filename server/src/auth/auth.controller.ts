@@ -3,21 +3,24 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Logger,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { ChangePasswordDto } from './dto';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { BlacklistThrottlerGuard } from 'src/common/throttler/blacklist-guard';
+//import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('auth')
-@UseGuards(ThrottlerGuard)
+@UseGuards(BlacklistThrottlerGuard)
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('signup')
   signup(@Body() dto: AuthDto) {
+    Logger.log('Signup request received with email: ' + dto.email);
     return this.authService.signup(dto);
   }
 
