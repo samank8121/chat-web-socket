@@ -47,7 +47,6 @@ const Layout = () => {
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
       <div className='flex flex-col min-h-screen p-2 container mx-auto'>
         <main>
-          
           <Header />
           <Outlet />
         </main>
